@@ -20,6 +20,11 @@ config.nfsboot
 	eth1 eth2 -> bond0 -> bridge -> vlan (IP from dhcp)
 	exmple cmdline:
 		int=eth2 vlan=10 intS=eth0 bondmode=1 root=/dev/nfs nfs=10.0.0.10:/path/to/your/nfsroot nfsargs=rw,nolock
+	MELLANOX= flag
+		this flag adds delay before and after loading mellanox driver (combined 15 seconds)
+		mellanox driver (mlx4_core and mlx4_en with connectx-3 sfp+ card)
+		hangs the kernel if it's built into the kernel or even loaded in too
+		quickly
 
 config.kvm
 	mostly static, small amount of modules
