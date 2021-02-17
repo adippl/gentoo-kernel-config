@@ -26,20 +26,26 @@ if ! test -f /tmp/k/linux-$NVERS-$TYPE.tar.xz ; then
 
 case $TYPE in
 	"x270")
-		echo installing x270 kernel...
-		mount /boot/
-		mount /boot/efi/
-		tar xJf /tmp/k/linux-$NVERS-$TYPE.tar.xz -C /tmp/k/ --exclude=System.map-* --exclude=kerncache.config --exclude=kernel-*
-		cp /tmp/k/config-*-$NVERS-$TYPE /usr/src/config
-		cp /tmp/k/config-*-$NVERS-$TYPE /usr/src/linux/.config
-		cp /tmp/k/boot/{vmlinuz,initramfs}-* /boot/
-		cp -r /tmp/k/lib/ /
-		cp /tmp/k/boot/vmlinuz-* /boot/efi/vmlinuz
-		cp /tmp/k/boot/initramfs-* /boot/efi/initrd
-		umount /boot/efi/
-		umount /boot/
-		rm -rf /tmp/k/
-		echo $NVERS > /etc/kern.v-$TYPE
+		case $IMODE in
+			"*")
+			echo installing x270 kernel...
+			mount /boot/
+			mount /boot/efi/
+			cp /boot/efi/vmlinuz /boot/efi/vmlinuz.old
+			cp /boot/efi/initrd /boot/efi/initrd.old
+			tar xJf /tmp/k/linux-$NVERS-$TYPE.tar.xz -C /tmp/k/ --exclude=System.map-* --exclude=kerncache.config --exclude=kernel-*
+			cp /tmp/k/config-*-$NVERS-$TYPE /usr/src/config
+			cp /tmp/k/config-*-$NVERS-$TYPE /usr/src/linux/.config
+			cp /tmp/k/boot/{vmlinuz,initramfs}-* /boot/
+			cp -r /tmp/k/lib/ /
+			cp /tmp/k/boot/vmlinuz-* /boot/efi/vmlinuz
+			cp /tmp/k/boot/initramfs-* /boot/efi/initrd
+			umount /boot/efi/
+			umount /boot/
+			rm -rf /tmp/k/
+			echo $NVERS > /etc/kern.v-$TYPE
+			;;
+		esac
 		;;
 
 	"kvm")
