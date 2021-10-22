@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>gentoo.maintainer@acmelab.top</email>
+		<name>adip</name>
+	</maintainer>
+	<use>
+		<flag name="grub-update">update grub config after new kernel is installed</flag>
+		<flag name="libvirt-local">install kernel and initramfs to libvirtd local storage</flag>
+		<flag name="libvirt-ceph">install kernel and initramfs to libvirt shared storage</flag>
+	</use>
+</pkgmetadata>

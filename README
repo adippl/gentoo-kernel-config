@@ -1,0 +1,42 @@
+Kernel configuration files designed for sys-kernel/gentoo-sources.
+They should work on vanilla kernels, but I haven't tested that.
+Kernels are stripped down of a lot components to speed up building/image size. 
+I can't guarantee they will work for your specific need, but you can use them as a basis for your config.
+Kernel configs include NFtables and some iptables modules for legacy support on docker, libvirt etc.
+Non vm images have virtio drivers in modules incase you needed to boot system in VM
+
+config.srv
+	kernel config for headless NFS booted KVM server. 
+		dell 11 and 12 gen servers
+		built in ethernet drivers (with firmware) for some mellanox, intel and broadcom NICs
+		docker should work, not tested
+
+config.nfsboot
+	the same config as config.srv but differen initramfs
+	it's in separate tar out of laziness atm
+	this initramfs uses custom linuxrc script designed for booting with root on NFS with my specific network cofiguration
+	eth -> bridge -> vlan (IP from dhcp)
+	it also supports bonding 2 interfaces if intS= and bondmode= are set
+	eth1 eth2 -> bond0 -> bridge -> vlan (IP from dhcp)
+	exmple cmdline:
+		int=eth2 vlan=10 intS=eth0 bondmode=1 root=/dev/nfs nfs=10.0.0.10:/path/to/your/nfsroot nfsargs=rw,nolock
+	MELLANOX= flag
+		this flag adds delay before and after loading mellanox driver (combined 15 seconds)
+		mellanox driver (mlx4_core and mlx4_en with connectx-3 sfp+ card)
+		hangs the kernel if it's built into the kernel or even loaded in too
+		quickly
+
+config.kvm
+	mostly static, small amount of modules
+	I skip bootloader and boot these kernels directly from QEMU.
+	It's an easy way to update all kernels on all virtual machines at once. 
+
+config.x270
+	Kernel config for lenovo x270
+	Stripped down kernel with (probably) all drivers required to run this laptop
+	traditional and usb-c dock works
+	it has limited lvm/filesystem support, It's good enough for my use
+	libvirt works, docker probably works.
+
+
+tars added to repo because I'm too lazy to setup file hosting

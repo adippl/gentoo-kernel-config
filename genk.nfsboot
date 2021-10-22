@@ -1,0 +1,1 @@
+--nfs --linuxrc=linuxrc.nfsboot --all-ramdisk-modules

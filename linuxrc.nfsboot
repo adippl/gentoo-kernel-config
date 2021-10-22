@@ -1,0 +1,70 @@
+#!/bin/ash
+
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License, v2 or later
+
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+
+
+mount -t proc none /proc 
+mount -t sysfs none /sys -o rw,nosuid,nodev,noexec,relatime
+mount -t tmpfs none /run -o rw,nosuid,nodev,relatime,mode=755
+mount -t devtmpfs -o "exec,nosuid,mode=0755,size=10M" udev /dev
+/bin/busybox --install -s
+
+INT=$(grep -o '\ int=eth[0-9]\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+INTS=$(grep -o '\ intS=eth[0-9]\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+BONDMODE=$(grep -o '\ bondmode=[0-9]\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+VLAN=$(grep -o -E '\ vlan=[0-9]{1,4}\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+NFS=$(grep -o  '\ nfs=[a-zA-Z0-9.:/-]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+NFSARGS=$(grep -o '\ nfsargs=[a-z,]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+#MODULE=$(grep -o '\ module=[a-z0-9,_]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+MELLANOX=$(grep -o '\ MELLANOX=1\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+SHELL=$(grep -o '\ SHELL=1\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+
+
+#sleep 5
+echo INT $INT
+echo INTS $INTS
+echo VLAN $VLAN
+echo NFS $NFS
+echo NFSARGS $NFSARGS
+echo BONDMODE $BONDMODE
+echo MELLANOX $MELLANOX
+echo SHELL $SHELL
+#sleep 5
+
+if ! [ "$MELLANOX"  = "" ] ; then
+	echo "mellanox nonsesne adding 30 sed delay"
+	sleep 10
+	modprobe -a mlx4_core mlx4_en
+	sleep 20
+	fi
+
+
+if ! [ "$INTS"  = "" ] && ! [ "$BONDMODE"  = "" ] ; then
+	echo "BOND MODE DETECTED!"
+	echo "+bond0" >  /sys/class/net/bonding_masters
+	echo $BONDMODE > /sys/class/net/bond0/bonding/mode
+	echo 100 > /sys/class/net/bond0/bonding/miimon
+	echo "+$INT" > /sys/class/net/bond0/bonding/slaves
+	echo "+$INTS" > /sys/class/net/bond0/bonding/slaves
+	echo "$INT" > /sys/class/net/bond0/bonding/primary
+	INT=bond0
+	#getty -n -l /bin/ashlogin 38400 tty1 &
+	#/bin/ash
+	fi
+
+ip link add name br0 type bridge
+ip link set br0 up
+ip link set $INT up
+ip link set $INT master br0
+ip link add link br0 name br0.$VLAN type vlan id $VLAN
+ip link set br0.$VLAN up
+udhcpc -i br0.$VLAN
+mkdir /newroot
+mount $NFS /newroot -o $NFSARGS
+if [ "$SHELL"  = "1" ] ; then
+	/bin/ash
+	fi
+exec switch_root /newroot /sbin/init
