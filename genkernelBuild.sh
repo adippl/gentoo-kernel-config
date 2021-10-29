@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-KVERS=$(ls -l /usr/src/linux|awk '{print $10}')
+KVERS=$(readlink /usr/src/linux)
 VERSN=$(echo $KVERS|cut -d'-' -f 2-)
 LVERS=$1
 GENK_MODS="$(cat genk.$LVERS)"
