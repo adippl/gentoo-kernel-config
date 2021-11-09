@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# efigen2
+# Copyright (C) 2021 Adam Prycki (email: adam.prycki@gmail.com)
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+root="crypt_root=/dev/nvme0n1p2 root=/dev/mapper/root root_trim=yes"
+i915="i915.enable_fbc=1 i915.fastboot=1"
+bootchart="real_init=/sbin/bootchartd initcall_debug printk.time=y quiet" 
+DEFAULT="$i915"
+for x in 000{0..9} ; do
+	efibootmgr -Bb $x 2>&1 >/dev/null
+	done
+for x in 000{a..f} ; do
+	efibootmgr -Bb $x 2>&1 >/dev/null
+	done
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix' -l '\vmlinuz' -u "$root $i915 rootflags=subvol=root,compress=zstd  quiet initrd=\initrd"  1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [test  kernel]' -l '\vmlinuz.test' -u "$root $i915 rootflags=compress=zstd initrd=\initrd.test"  1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [old   kernel]' -l '\vmlinuz.old' -u "$root $i915 rootflags=compress=zstd initrd=\initrd.old"  1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [test rootvol]' -l '\vmlinuz' -u "$root $i915 rootflags=compress=zstd,subvol=test-root initrd=\initrd" 1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [old  rootvol]' -l '\vmlinuz' -u "$root $i915 rootflags=compress=zstd,subvol=bk-root initrd=\initrd" 1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [old  rootvol + kernel]' -l '\vmlinuz.old' -u "$root $i915 rootflags=compress=zstd,subvol=bk-root initrd=\initrd.old" 1>/dev/null
+efibootmgr -c -d /dev/nvme0n1 -L 'Ganoo/Loonix [bootchart]' -l '\vmlinuz' -u "$root $i915 rootflags=compress=zstd,subvol=root initrd=\initrd $bootchart" 1>/dev/null
+echo efibootmgr -o 0000,0001,0002,0003,0004,0005,0006,0017,0018,0019,001A,001B,001C,001D
+#echo grub-install --efi-directory=/boot/efi/ --boot-directory=/boot/efi/ --removable
+echo efibootmgr -v |sed 's/\.//g'
+echo
+echo
+
+#everything in reversed order
+#new entried land at the begining of the queue
+for VERS in $(cd /boot/kag/ && ls |sort -r ); do
+	echo $VERS
+	efibootmgr -c -d /dev/nvme0n1 -L "Ganoo/Loonix linux-$VERS debug"	-l "\vmlinuz-x86_64-$VERS" -u " $root initrd=\initrd initramfs-x86_64-$VERS.img rootflags=compress=zstd,subvol=root	$DEBUG"   1>/dev/null
+	efibootmgr -c -d /dev/nvme0n1 -L "Ganoo/Loonix linux-$VERS bk-root"	-l "\vmlinuz-x86_64-$VERS" -u " $root initrd=\initrd initramfs-x86_64-$VERS.img rootflags=compress=zstd,subvol=bk-root	$DEBUG"   1>/dev/null
+	efibootmgr -c -d /dev/nvme0n1 -L "Ganoo/Loonix linux-$VERS"		-l "\vmlinuz-x86_64-$VERS" -u " $root initrd=\initrd initramfs-x86_64-$VERS.img rootflags=compress=zstd,subvol=root	$DEFAULT" 1>/dev/null 
+	done
+efibootmgr -v |sed 's/\.//g'
