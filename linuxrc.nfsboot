@@ -17,7 +17,7 @@ INTS=$(grep -o '\ intS=eth[0-9]\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |s
 BONDMODE=$(grep -o '\ bondmode=[0-9]\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
 VLAN=$(grep -o -E '\ vlan=[0-9]{1,4}\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
 NFS=$(grep -o  '\ nfs=[a-zA-Z0-9.:/-]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
-NFSARGS=$(grep -o '\ nfsargs=[a-z,]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
+NFSARGS=$(grep -o '\ nfsargs=[a-z0-9,=]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2- |sed 1q)
 #MODULE=$(grep -o '\ module=[a-z0-9,_]*\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
 MELLANOX=$(grep -o '\ MELLANOX=1\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
 SHELL=$(grep -o '\ SHELL=1\ ' /proc/cmdline |sed 's/\ //g'|cut -d'=' -f2 |sed 1q)
